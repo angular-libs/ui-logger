@@ -1,0 +1,19 @@
+---
+engines:
+  csslint:
+    enabled: true
+  eslint:
+    enabled: true
+  fixme:
+    enabled: true
+ratings:
+  paths:
+  - "**.css"
+  - "**.js"
+  - "**.jsx"
+exclude_paths:
+- "dist/**.*"
+- "examples/*"
+- "test/*"
+- "*.*"
+- "app/**.html"
