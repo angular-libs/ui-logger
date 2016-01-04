@@ -12,6 +12,6 @@
   "unused": true,
   "globals": {
     "angular": false,
-    "printStackTrace":false
+    "moment":false
   }
 }

@@ -8,12 +8,12 @@
  * Service in the ui.logger.
  */
 angular.module('ui.logger')
-  .service('loggerUtils', function (StackTrace, $window) {
+  .service('loggerUtils', function (StackTrace, $window,loggerLevels) {
     function errback(err) {
       console.warn("Error server-side logging failed");
       console.log(err.message);
     }
-    function log(exception, cause) {
+    function log(logger,exception, cause) {
       if(angular.isString(exception)){
         exception=new Error(exception);
       }
@@ -24,7 +24,7 @@ angular.module('ui.logger')
           return sf.toString();
         }).join('\n');
         return {
-          name:'a-logger',
+          name:logger.name,
           time:eventLogDateTime,
           url: $window.location.href,
           message: errorMessage,
@@ -35,6 +35,18 @@ angular.module('ui.logger')
       }).catch(errback);
     }
     return {
-      getLogData:log
-    }
+      getLogData:log,
+      isEnabled:function(logger,type){
+        if(logger.level){
+          var loggerLevelIndex=loggerLevels.indexOf(logger.level);
+          var loggerMethodIndex=loggerLevels.indexOf(type);
+          if(loggerLevelIndex!==-1){
+            if(loggerLevelIndex<=loggerMethodIndex){
+              return true;
+            }
+          }
+        }
+        return false;
+      }
+    };
   });

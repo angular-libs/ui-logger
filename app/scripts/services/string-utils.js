@@ -18,5 +18,5 @@ angular.module('ui.logger')
         }
         return str;
       }
-    }
+    };
   });

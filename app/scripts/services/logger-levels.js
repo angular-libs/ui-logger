@@ -8,4 +8,4 @@
  * Constant in the ui.logger.
  */
 angular.module('ui.logger')
-  .constant('loggerLevels', ['error','log','info','warn']);
+  .constant('loggerLevels', ['debug','info','warn','log','error']);
