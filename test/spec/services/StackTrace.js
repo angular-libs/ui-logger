@@ -6,9 +6,9 @@ describe('Service: traceService', function () {
   beforeEach(module('ui.logger'));
 
   // instantiate service
-  var traceService;
-  beforeEach(inject(function (_traceService_) {
-    traceService = _traceService_;
+  var _StackTrace;
+  beforeEach(inject(function (StackTrace) {
+    _StackTrace = StackTrace;
   }));
 
   it('should do something', function () {

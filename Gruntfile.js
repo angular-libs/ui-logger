@@ -222,6 +222,7 @@ module.exports = function (grunt) {
     wiredep: {
       app: {
         src: ['<%= yeoman.app %>/index.html'],
+        exclude: ['bower_components/source-map/source-map.js'],
         ignorePath:  /\.\.\//
       }
     },
@@ -448,7 +449,7 @@ module.exports = function (grunt) {
 
   grunt.registerTask('build', [
     'newer:jshint',
-    'jsinspect',//'coverage',
+    'jsinspect','coverage',
     'clean:dist',
     'wiredep',
     'useminPrepare',
