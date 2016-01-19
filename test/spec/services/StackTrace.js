@@ -1,6 +1,6 @@
 'use strict';
 
-describe('Service: traceService', function () {
+describe('Service: StackTrace', function () {
 
   // load the service's module
   beforeEach(module('ui.logger'));
@@ -12,7 +12,7 @@ describe('Service: traceService', function () {
   }));
 
   it('should do something', function () {
-    expect(!!traceService).toBe(true);
+    expect(!!_StackTrace).toBe(true);
   });
 
 });
