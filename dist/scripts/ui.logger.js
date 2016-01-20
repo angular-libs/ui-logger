@@ -8,8 +8,7 @@
  *
  * Main module of the application.
  */
-angular
-  .module('ui.logger', []);
+angular.module('ui.logger', []);
 
 
 'use strict';
@@ -111,20 +110,21 @@ angular.module('ui.logger')
 
       }).catch(errback);
     }
-    return {
-      getLogData:log,
-      isEnabled:function(logger,type){
-        if(logger.level){
-          var loggerLevelIndex=loggerLevels.indexOf(logger.level);
-          var loggerMethodIndex=loggerLevels.indexOf(type);
-          if(loggerLevelIndex!==-1){
-            if(loggerLevelIndex<=loggerMethodIndex){
-              return true;
-            }
+    function isEnabled(logger,type){
+      if(logger.level){
+        var loggerLevelIndex=loggerLevels.indexOf(logger.level);
+        var loggerMethodIndex=loggerLevels.indexOf(type);
+        if(loggerLevelIndex!==-1){
+          if(loggerLevelIndex<=loggerMethodIndex){
+            return true;
           }
         }
-        return false;
       }
+      return false;
+    }
+    return {
+      getLogData:log,
+      isEnabled:isEnabled
     };
   });
 
@@ -153,14 +153,12 @@ angular.module('ui.logger')
   .provider('logger', function (loggerLevels) {
 
     var level=loggerLevels[0] ;
-
-    this.setLevel=function(l) {
+    function setLevel(l) {
       level=l;
-    };
+    }
+    this.setLevel=setLevel;
 
-
-    // Method for instantiating
-    this.$get = function (stringUtils,loggerUtils) {
+    function factory (stringUtils,loggerUtils) {
       var logPattern='{0}::[{1}]> {2}';
       function getInstance(name){
         if(!name){
@@ -188,12 +186,15 @@ angular.module('ui.logger')
         });
         return logger;
       }
+      function SetLog($log){
+        this.$log=$log;
+      }
       var service={
-        _setLog:function($log){
-          this.$log=$log;
-        },
+        _setLog:SetLog,
         getInstance:getInstance
       };
       return service;
-    };
+    }
+    // Method for instantiating
+    this.$get = ['stringUtils','loggerUtils',factory];
   });

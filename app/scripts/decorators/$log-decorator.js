@@ -12,7 +12,8 @@ angular.module('ui.logger')
     $provide.decorator('$log', ['$delegate', 'logger','loggerLevels','loggerUtils', function ($delegate, logger,loggerLevels,loggerUtils) {
 
       var log={};
-      logger._setLog($delegate);
+      logger.$setLog($delegate);
+      loggerUtils.$defaultLogger($delegate);
       var defaultLogger=logger.getInstance('default');
       loggerLevels.forEach(function(level){
         log[level]=function () {

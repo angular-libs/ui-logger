@@ -11,14 +11,19 @@ angular.module('ui.logger')
   .provider('logger', function (loggerLevels) {
 
     var level=loggerLevels[0] ;
-
-    this.setLevel=function(l) {
+    var callback=angular.noop;
+    function setLevel(l) {
       level=l;
-    };
+    }
+    function setInterceptor(cb) {
+      if(angular.isFunction(cb)){
+        callback=cb;
+      }
+    }
+    this.setLevel=setLevel;
+    this.setInterceptor=setInterceptor;
 
-
-    // Method for instantiating
-    this.$get = function (stringUtils,loggerUtils) {
+    function factory (stringUtils,loggerUtils) {
       var logPattern='{0}::[{1}]> {2}';
       function getInstance(name){
         if(!name){
@@ -33,25 +38,30 @@ angular.module('ui.logger')
             return this;
           }
         };
-        loggerLevels.forEach(function(_level){
+        function resigterLoggers(_level){
           logger[_level]=function(){
             if(loggerUtils.isEnabled(this,_level)){
               var args=Array.prototype.slice.call(arguments);
               args.unshift(this);
               loggerUtils.getLogData.apply(null, args).then(function(data){
                 service.$log[_level](stringUtils.format(logPattern,data.time,data.name,(data.message+'\n'+data.stackframes)));
+                callback.call(null,data);
               });
             }
           };
-        });
+        }
+        loggerLevels.forEach(resigterLoggers);
         return logger;
       }
+      function SetLog($log){
+        this.$log=$log;
+      }
       var service={
-        _setLog:function($log){
-          this.$log=$log;
-        },
+        $setLog:SetLog,
         getInstance:getInstance
       };
       return service;
-    };
+    }
+    // Method for instantiating
+    this.$get = ['stringUtils','loggerUtils',factory];
   });
