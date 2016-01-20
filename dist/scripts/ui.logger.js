@@ -9,7 +9,21 @@
  * Main module of the application.
  */
 angular.module('ui.logger', []);
-
+/*angular.module('ui.logger').config(function(loggerProvider){
+  loggerProvider.setLevel('debug');
+  loggerProvider.setInterceptor(function(data){
+    console.log(data);
+  });
+});
+angular.module('ui.logger').run(function(logger){
+  var _logger=logger.getInstance('runlogger');
+  try{
+    //throw new Error('error ...!!!');
+    throw 'error ...!!!';
+  }catch(err){
+    _logger.debug(err);
+  }
+});*/
 
 'use strict';
 
@@ -25,7 +39,8 @@ angular.module('ui.logger')
     $provide.decorator('$log', ['$delegate', 'logger','loggerLevels','loggerUtils', function ($delegate, logger,loggerLevels,loggerUtils) {
 
       var log={};
-      logger._setLog($delegate);
+      logger.$setLog($delegate);
+      loggerUtils.$defaultLogger($delegate);
       var defaultLogger=logger.getInstance('default');
       loggerLevels.forEach(function(level){
         log[level]=function () {
@@ -84,31 +99,42 @@ angular.module('ui.logger')
  * Service in the ui.logger.
  */
 angular.module('ui.logger')
-  .service('loggerUtils', function (StackTrace, $window,loggerLevels) {
+  .service('loggerUtils', function (StackTrace, $window,loggerLevels,$injector) {
+    var $defaultLogger;
     function errback(err) {
-      console.warn("Error server-side logging failed");
-      console.log(err.message);
+      $defaultLogger.warn("Error server-side logging failed");
+      $defaultLogger.log(err.message);
     }
     function log(logger,exception, cause) {
-      if(angular.isString(exception)){
-        exception=new Error(exception);
-      }
       var errorMessage = exception.toString();
-      var eventLogDateTime = moment(new Date()).format('LLL');
-      return StackTrace.fromError(exception).then(function(stackframes){
-        var stringifiedStack = stackframes.map(function(sf) {
-          return sf.toString();
-        }).join('\n');
-        return {
+      var eventLogDateTime = moment().format('LLL');
+
+      if(angular.isString(exception)){
+        var $q=$injector.get('$q');
+        return $q.resolve({
           name:logger.name,
           time:eventLogDateTime,
           url: $window.location.href,
           message: errorMessage,
-          stackframes: stringifiedStack,
+          stackframes: [],
           cause: ( cause || "")
-        };
+        });
+      }else{
+        return StackTrace.fromError(exception).then(function(stackframes){
+          var stringifiedStack = stackframes.map(function(sf) {
+            return sf.toString();
+          }).join('\n');
+          return {
+            name:logger.name,
+            time:eventLogDateTime,
+            url: $window.location.href,
+            message: errorMessage,
+            stackframes: stringifiedStack,
+            cause: ( cause || "")
+          };
+        }).catch(errback);
+      }
 
-      }).catch(errback);
     }
     function isEnabled(logger,type){
       if(logger.level){
@@ -122,8 +148,15 @@ angular.module('ui.logger')
       }
       return false;
     }
+    function set$defaultLogger(logger){
+      if(logger){
+        $defaultLogger=logger;
+      }
+      return $defaultLogger;
+    }
     return {
       getLogData:log,
+      $defaultLogger:set$defaultLogger,
       isEnabled:isEnabled
     };
   });
@@ -153,10 +186,17 @@ angular.module('ui.logger')
   .provider('logger', function (loggerLevels) {
 
     var level=loggerLevels[0] ;
+    var callback=angular.noop;
     function setLevel(l) {
       level=l;
     }
+    function setInterceptor(cb) {
+      if(angular.isFunction(cb)){
+        callback=cb;
+      }
+    }
     this.setLevel=setLevel;
+    this.setInterceptor=setInterceptor;
 
     function factory (stringUtils,loggerUtils) {
       var logPattern='{0}::[{1}]> {2}';
@@ -173,24 +213,26 @@ angular.module('ui.logger')
             return this;
           }
         };
-        loggerLevels.forEach(function(_level){
+        function resigterLoggers(_level){
           logger[_level]=function(){
             if(loggerUtils.isEnabled(this,_level)){
               var args=Array.prototype.slice.call(arguments);
               args.unshift(this);
               loggerUtils.getLogData.apply(null, args).then(function(data){
                 service.$log[_level](stringUtils.format(logPattern,data.time,data.name,(data.message+'\n'+data.stackframes)));
+                callback.call(null,data);
               });
             }
           };
-        });
+        }
+        loggerLevels.forEach(resigterLoggers);
         return logger;
       }
       function SetLog($log){
         this.$log=$log;
       }
       var service={
-        _setLog:SetLog,
+        $setLog:SetLog,
         getInstance:getInstance
       };
       return service;
