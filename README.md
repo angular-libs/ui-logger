@@ -11,6 +11,8 @@
 [![Issue Stats](http://issuestats.com/github/angular-libs/ui-logger/badge/issue)](http://issuestats.com/github/angular-libs/ui-logger)
 
 -![codecov.io](https://codecov.io/github/angular-libs/ui-logger/branch.svg?branch=master)
+
+[![SensioLabsInsight](https://insight.sensiolabs.com/projects/d8729aca-bb23-4d29-a543-c04a64a5976e/big.png)](https://insight.sensiolabs.com/projects/d8729aca-bb23-4d29-a543-c04a64a5976e)
 ## simple logger in angular js
 
 #Installing
