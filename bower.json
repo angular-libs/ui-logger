@@ -20,7 +20,7 @@
   },
   "description": "ui-logger for angular js",
   "keywords": [
-    "ui-logger",
+    "ui-logger","front-end-logger","angularjs-logger",
     "angularjs",
     "logger"
   ],

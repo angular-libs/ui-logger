@@ -12,6 +12,7 @@ angular.module('ui.logger')
 
     var level=loggerLevels[0] ;
     var callback=angular.noop;
+    var _disableConsoleLogging=false;
     function setLevel(l) {
       level=l;
     }
@@ -20,9 +21,13 @@ angular.module('ui.logger')
         callback=cb;
       }
     }
+    function disableConsoleLogging(flag) {
+      _disableConsoleLogging=!!flag;
+    }
+
     this.setLevel=setLevel;
     this.setInterceptor=setInterceptor;
-
+    this.disableConsoleLogging=disableConsoleLogging;
     function factory (stringUtils,loggerUtils) {
       var logPattern='{0}::[{1}]> {2}';
       function getInstance(name){
@@ -44,7 +49,9 @@ angular.module('ui.logger')
               var args=Array.prototype.slice.call(arguments);
               args.unshift(this);
               loggerUtils.getLogData.apply(null, args).then(function(data){
-                service.$log[_level](stringUtils.format(logPattern,data.time,data.name,(data.message+'\n'+data.stackframes)));
+                if(!_disableConsoleLogging){
+                  service.$log[_level](stringUtils.format(logPattern,data.time,data.name,(data.message+'\n'+data.stackframes)));
+                }
                 callback.call(null,data);
               });
             }
