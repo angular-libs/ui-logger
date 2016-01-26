@@ -6,7 +6,7 @@
     "moment": "~2.10.6",
     "stacktrace-js": "~1.0.1"
   },
-  "main": "dist/scripts/ui-logger.js",
+  "main": ["dist/scripts/ui.logger.js","dist/scripts/ui.logger.min.js","dist/scripts/ui.logger.js.map"],
   "devDependencies": {
     "angular-mocks": "^1.4.0"
   },
