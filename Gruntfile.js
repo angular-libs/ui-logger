@@ -223,6 +223,7 @@ module.exports = function (grunt) {
       app: {
         src: ['<%= yeoman.app %>/index.html'],
         exclude: ['bower_components/source-map/source-map.js'],
+        include: ['bower_components/source-map/dist/source-map.js'],
         ignorePath:  /\.\.\//
       }
     },
@@ -284,8 +285,8 @@ module.exports = function (grunt) {
     uglify: {
       dist: {
         files: {
-          '<%= yeoman.dist %>/scripts/ui-logger.min.js': [
-            '<%= yeoman.dist %>/scripts/ui-logger.js'
+          '<%= yeoman.dist %>/scripts/ui.logger.min.js': [
+            '<%= yeoman.dist %>/scripts/ui.logger.js'
           ],
           '<%= yeoman.dist %>/scripts/vendor.min.js': [
             '<%= yeoman.dist %>/scripts/vendor.js'
@@ -293,6 +294,7 @@ module.exports = function (grunt) {
         }
       },
       options : {
+        sourceMap:true,
         beautify : {
           ascii_only : true
         }
@@ -344,9 +346,9 @@ module.exports = function (grunt) {
       dist: {
         files: [{
           expand: true,
-          cwd: '.tmp/concat/scripts',
+          cwd: 'dist/scripts',
           src: ['*.js', '!oldieshim.js'],
-          dest: '.tmp/concat/scripts'
+          dest: 'dist/scripts'
         }]
       }
     },

@@ -9,21 +9,26 @@
  * Main module of the application.
  */
 angular.module('ui.logger', []);
-/*angular.module('ui.logger').config(function(loggerProvider){
-  loggerProvider.setLevel('debug');
-  loggerProvider.setInterceptor(function(data){
-    console.log(data);
-  });
-});
-angular.module('ui.logger').run(function(logger){
-  var _logger=logger.getInstance('runlogger');
-  try{
-    //throw new Error('error ...!!!');
-    throw 'error ...!!!';
-  }catch(err){
-    _logger.debug(err);
-  }
-});*/
+
+
+//angular.module('ui.logger').config(function(loggerProvider){
+//  //loggerProvider.setLevel('debug');
+//  loggerProvider.setInterceptor(function(data){
+//    console.log(data);
+//  });
+//  //loggerProvider.disableConsoleLogging(true);
+//});
+//angular.module('ui.logger').run(function(logger){
+//  var _logger=logger.getInstance();
+//  var _logger1=logger.getInstance('run');
+//  _logger.info(_logger===_logger1);
+//  try{
+//    throw new TypeError('error ...!!!');
+//    //throw 'error ...!!!';
+//  }catch(err){
+//    _logger.debug(err);
+//  }
+//});
 
 'use strict';
 
@@ -35,23 +40,23 @@ angular.module('ui.logger').run(function(logger){
  * Decorator of the ui.logger
  */
 angular.module('ui.logger')
-  .config(function ($provide) {
-    $provide.decorator('$log', ['$delegate', 'logger','loggerLevels','loggerUtils', function ($delegate, logger,loggerLevels,loggerUtils) {
+  .config(["$provide", function ($provide) {
+    $provide.decorator('$log', ['$delegate', 'logger','loggerLevels','logUtils', function ($delegate, logger,loggerLevels,logUtils) {
 
       var log={};
       logger.$setLog($delegate);
-      loggerUtils.$defaultLogger($delegate);
-      var defaultLogger=logger.getInstance('default');
+      logUtils.$defaultLogger($delegate);
+      var defaultLogger=logger.getInstance();
       loggerLevels.forEach(function(level){
         log[level]=function () {
-          if(loggerUtils.isEnabled(defaultLogger,level)) {
+          if(logUtils.isEnabled(defaultLogger,level)) {
             defaultLogger[level].apply(defaultLogger, arguments);
           }
         };
       });
       return log;
     }]);
-  });
+  }]);
 
 'use strict';
 
@@ -70,54 +75,29 @@ angular.module('ui.logger').service('StackTrace', function () {
 
 /**
  * @ngdoc service
- * @name ui.logger.stringUtils
- * @description
- * # stringUtils
- * Service in the ui.logger.
- */
-angular.module('ui.logger')
-  .service('stringUtils', function () {
-    return {
-      format:function() {
-        var str = arguments[0];
-        for (var i = 1; i < arguments.length; i++) {
-          var regEx = new RegExp("\\{" + (i - 1) + "\\}", "gm");
-          str = str.replace(regEx, arguments[i]);
-        }
-        return str;
-      }
-    };
-  });
-
-'use strict';
-
-/**
- * @ngdoc service
  * @name ui.logger.loggerUtils
  * @description
  * # loggerUtils
  * Service in the ui.logger.
  */
 angular.module('ui.logger')
-  .service('loggerUtils', function (StackTrace, $window,loggerLevels,$injector) {
+  .service('logUtils', ["StackTrace", "$window", "loggerLevels", "$injector", function (StackTrace, $window,loggerLevels,$injector) {
     var $defaultLogger;
     function errback(err) {
       $defaultLogger.warn("Error server-side logging failed");
       $defaultLogger.log(err.message);
     }
-    function log(logger,exception, cause) {
+    function log(logger,exception) {
       var errorMessage = exception.toString();
       var eventLogDateTime = moment().format('LLL');
 
-      if(angular.isString(exception)){
+      if(!(exception instanceof Error)){
         var $q=$injector.get('$q');
         return $q.resolve({
           name:logger.name,
           time:eventLogDateTime,
           url: $window.location.href,
-          message: errorMessage,
-          stackframes: [],
-          cause: ( cause || "")
+          message: errorMessage
         });
       }else{
         return StackTrace.fromError(exception).then(function(stackframes){
@@ -129,8 +109,8 @@ angular.module('ui.logger')
             time:eventLogDateTime,
             url: $window.location.href,
             message: errorMessage,
-            stackframes: stringifiedStack,
-            cause: ( cause || "")
+            stackframes: stringifiedStack//,
+            //cause: ( cause || "")
           };
         }).catch(errback);
       }
@@ -159,7 +139,7 @@ angular.module('ui.logger')
       $defaultLogger:set$defaultLogger,
       isEnabled:isEnabled
     };
-  });
+  }]);
 
 'use strict';
 
@@ -182,54 +162,76 @@ angular.module('ui.logger')
  * # logger
  * Provider in the ui.logger.
  */
-angular.module('ui.logger')
-  .provider('logger', function (loggerLevels) {
-
-    var level=loggerLevels[0] ;
-    var callback=angular.noop;
-    function setLevel(l) {
-      level=l;
+(function(){
+  function SetLevel(l) {
+    this.level=l;
+    return this;
+  }
+  function SetInterceptor(cb) {
+    if(angular.isFunction(cb)){
+      this.callback=cb;
     }
-    function setInterceptor(cb) {
-      if(angular.isFunction(cb)){
-        callback=cb;
-      }
+  }
+  function DisableConsoleLogging(flag) {
+    this._disableConsoleLogging=!!flag;
+  }
+  function SetDefaultName(name) {
+    this._defaultName=name;
+  }
+  function format() {
+    var str = arguments[0];
+    for (var i = 1; i < arguments.length; i++) {
+      var regEx = new RegExp("\\{" + (i - 1) + "\\}", "gm");
+      str = str.replace(regEx, arguments[i]);
     }
-    this.setLevel=setLevel;
-    this.setInterceptor=setInterceptor;
+    return str;
+  }
+  function LoggerProvider(loggerLevels) {
+    this.level=loggerLevels[0] ;
+    this.callback=angular.noop;
+    this._disableConsoleLogging=false;
+    this._defaultName='default';
+    var _defaultInstance;
+    var _self=this;
 
-    function factory (stringUtils,loggerUtils) {
+    function factory (logUtils) {
       var logPattern='{0}::[{1}]> {2}';
       function getInstance(name){
         if(!name){
-          new Error('name is required!!');
+          if(_defaultInstance){
+            return _defaultInstance;
+          }
+          name=_self._defaultName;
         }
         var logger={
           name:name,
-          enabled: false,
-          level:level,
-          setLevel:function(l){
-            this.level=l;
-            return this;
-          }
+          level:_self.level,
+          setLevel:SetLevel
         };
-        function resigterLoggers(_level){
-          logger[_level]=function(){
-            if(loggerUtils.isEnabled(this,_level)){
-              var args=Array.prototype.slice.call(arguments);
-              args.unshift(this);
-              loggerUtils.getLogData.apply(null, args).then(function(data){
-                service.$log[_level](stringUtils.format(logPattern,data.time,data.name,(data.message+'\n'+data.stackframes)));
-                callback.call(null,data);
-              });
-            }
-          };
+        for(var k=0;k<loggerLevels.length;k++){
+          _resigterLoggers(logger,loggerLevels[k]);
         }
-        loggerLevels.forEach(resigterLoggers);
+        if(name===_self._defaultName){
+          _defaultInstance=logger;
+        }
         return logger;
       }
       function SetLog($log){
         this.$log=$log;
+      }
+      function _resigterLoggers(logger,_level){
+        logger[_level]=function(){
+          if(logUtils.isEnabled(this,_level)){
+            var args=Array.prototype.slice.call(arguments);
+            args.unshift(this);
+            logUtils.getLogData.apply(null, args).then(function(data){
+              if(!_self._disableConsoleLogging){
+                service.$log[_level](format(logPattern,data.time,data.name,(data.message+'\n'+data.stackframes)));
+              }
+              _self.callback.call(null,data);
+            });
+          }
+        };
       }
       var service={
         $setLog:SetLog,
@@ -238,5 +240,12 @@ angular.module('ui.logger')
       return service;
     }
     // Method for instantiating
-    this.$get = ['stringUtils','loggerUtils',factory];
-  });
+    this.$get = ['logUtils',factory];
+  }
+
+  LoggerProvider.prototype.setLevel=SetLevel;
+  LoggerProvider.prototype.setInterceptor=SetInterceptor;
+  LoggerProvider.prototype.disableConsoleLogging=DisableConsoleLogging;
+  LoggerProvider.prototype.setDefaultName=SetDefaultName;
+  angular.module('ui.logger').provider('logger',['loggerLevels',LoggerProvider]);
+})();

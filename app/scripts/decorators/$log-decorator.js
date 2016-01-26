@@ -9,15 +9,15 @@
  */
 angular.module('ui.logger')
   .config(function ($provide) {
-    $provide.decorator('$log', ['$delegate', 'logger','loggerLevels','loggerUtils', function ($delegate, logger,loggerLevels,loggerUtils) {
+    $provide.decorator('$log', ['$delegate', 'logger','loggerLevels','logUtils', function ($delegate, logger,loggerLevels,logUtils) {
 
       var log={};
       logger.$setLog($delegate);
-      loggerUtils.$defaultLogger($delegate);
-      var defaultLogger=logger.getInstance('default');
+      logUtils.$defaultLogger($delegate);
+      var defaultLogger=logger.getInstance();
       loggerLevels.forEach(function(level){
         log[level]=function () {
-          if(loggerUtils.isEnabled(defaultLogger,level)) {
+          if(logUtils.isEnabled(defaultLogger,level)) {
             defaultLogger[level].apply(defaultLogger, arguments);
           }
         };
