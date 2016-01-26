@@ -27,7 +27,6 @@
   "appPath": "app",
   "moduleName": "ui.logger",
   "ignore": [
-    //"**/.*",
     "test",
     "package.json",
     "app",
