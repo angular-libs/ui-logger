@@ -27,7 +27,7 @@ angular.module('ui.logger')
           message: errorMessage
         });
       }else{
-        return StackTrace.fromError(exception).then(function(stackframes){
+        return StackTrace.fromError(exception,StackTrace.$options).then(function(stackframes){
           var stringifiedStack = stackframes.map(function(sf) {
             return sf.toString();
           }).join('\n');

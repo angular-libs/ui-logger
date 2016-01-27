@@ -11,24 +11,25 @@
 angular.module('ui.logger', []);
 
 
-//angular.module('ui.logger').config(function(loggerProvider){
-//  //loggerProvider.setLevel('debug');
-//  loggerProvider.setInterceptor(function(data){
-//    console.log(data);
-//  });
-//  //loggerProvider.disableConsoleLogging(true);
-//});
-//angular.module('ui.logger').run(function(logger){
-//  var _logger=logger.getInstance();
-//  var _logger1=logger.getInstance('run');
-//  _logger.info(_logger===_logger1);
-//  try{
-//    throw new TypeError('error ...!!!');
-//    //throw 'error ...!!!';
-//  }catch(err){
-//    _logger.debug(err);
-//  }
-//});
+/*angular.module('ui.logger').config(function(loggerProvider,StackTraceProvider){
+  loggerProvider.setLevel('debug');
+  loggerProvider.setInterceptor(function(data){
+    console.log(data);
+  });
+  loggerProvider.disableConsoleLogging(true);
+  StackTraceProvider.setOptions({a:1,b:2});
+});
+angular.module('ui.logger').run(function(logger){
+  var _logger=logger.getInstance();
+  var _logger1=logger.getInstance('run');
+  _logger.info(_logger===_logger1);
+  try{
+    throw new TypeError('error ...!!!');
+    //throw 'error ...!!!';
+  }catch(err){
+    _logger.debug(err);
+  }
+});*/
 
 'use strict';
 
@@ -67,9 +68,24 @@ angular.module('ui.logger')
  * # StackTrace
  * Service in the ui.logger.
  */
-angular.module('ui.logger').service('StackTrace', function () {
-    return window.StackTrace;
-  });
+(function(){
+
+  function Provider(){
+    var self=this;
+    function Service(){
+      window.StackTrace.$options=self.options;
+      return window.StackTrace;
+    }
+    this.options={};
+    this.$get=Service;
+  }
+  function SetOptions(opts){
+    angular.extend(this.options,opts);
+  }
+  Provider.prototype.setOptions=SetOptions;
+  angular.module('ui.logger').provider('StackTrace',[Provider]);
+})();
+
 
 'use strict';
 
@@ -100,7 +116,7 @@ angular.module('ui.logger')
           message: errorMessage
         });
       }else{
-        return StackTrace.fromError(exception).then(function(stackframes){
+        return StackTrace.fromError(exception,StackTrace.$options).then(function(stackframes){
           var stringifiedStack = stackframes.map(function(sf) {
             return sf.toString();
           }).join('\n');

@@ -7,6 +7,21 @@
  * # StackTrace
  * Service in the ui.logger.
  */
-angular.module('ui.logger').service('StackTrace', function () {
-    return window.StackTrace;
-  });
+(function(){
+
+  function Provider(){
+    var self=this;
+    function Service(){
+      window.StackTrace.$options=self.options;
+      return window.StackTrace;
+    }
+    this.options={};
+    this.$get=Service;
+  }
+  function SetOptions(opts){
+    angular.extend(this.options,opts);
+  }
+  Provider.prototype.setOptions=SetOptions;
+  angular.module('ui.logger').provider('StackTrace',[Provider]);
+})();
+
