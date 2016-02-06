@@ -7,7 +7,7 @@
 <a href="https://codeclimate.com/github/angular-libs/ui-logger"><img src="https://codeclimate.com/github/angular-libs/ui-logger/badges/gpa.svg" /></a>
 [![Coverage Status](https://coveralls.io/repos/angular-libs/ui-logger/badge.svg?branch=master&service=github)](https://coveralls.io/github/angular-libs/ui-logger?branch=master)
 [![Bower version](https://badge.fury.io/bo/ui-logger.svg)](https://badge.fury.io/bo/ui-logger)
-[![Issue Stats](http://issuestats.com/github/angular-libs/ui-logger/badge/pr)](http://issuestats.com/github/angular-libs/ui-logger)
+[![Issue Stats](http://issuestats.com/github/angular-libs/ui-logger/badge/pr?style=flat-square)](http://issuestats.com/github/angular-libs/ui-logger)
 [![Issue Stats](http://issuestats.com/github/angular-libs/ui-logger/badge/issue)](http://issuestats.com/github/angular-libs/ui-logger)
 
 -![codecov.io](https://codecov.io/github/angular-libs/ui-logger/branch.svg?branch=master)
