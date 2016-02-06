@@ -64,6 +64,7 @@
 
     <!-- build:js(.) scripts/vendor.js -->
     <!-- bower:js -->
+    <script src="bower_components/jquery/dist/jquery.js"></script>
     <script src="bower_components/angular/angular.js"></script>
     <script src="bower_components/moment/moment.js"></script>
     <script src="bower_components/stackframe/stackframe.js"></script>
@@ -72,15 +73,21 @@
     <script src="bower_components/stacktrace-gps/dist/stacktrace-gps.js"></script>
     <script src="bower_components/stacktrace-js/dist/stacktrace.js"></script>
     <!-- endbower -->
+    <script src="bower_components/source-map/dist/source-map.js"></script>
+
     <!-- endbuild -->
 
         <!-- build:js({.tmp,app}) scripts/ui.logger.js -->
-        <script src="scripts/app.js"></script>
+
+
+    <script src="scripts/app.js"></script>
         <script src="scripts/decorators/$log-decorator.js"></script>
         <script src="scripts/services/StackTrace.js"></script>
         <script src="scripts/services/logger-utils.js"></script>
         <script src="scripts/services/logger-levels.js"></script>
         <script src="scripts/services/logger.js"></script>
+        <script src="scripts/services/source-map.js"></script>
+        <script src="scripts/services/source-map-util.js"></script>
         <!-- endbuild -->
 </body>
 </html>

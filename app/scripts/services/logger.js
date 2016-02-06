@@ -23,6 +23,7 @@
   function SetDefaultName(name) {
     this._defaultName=name;
   }
+
   function format() {
     var str = arguments[0];
     for (var i = 1; i < arguments.length; i++) {

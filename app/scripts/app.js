@@ -10,16 +10,16 @@
  */
 angular.module('ui.logger', []);
 
-
-/*angular.module('ui.logger').config(function(loggerProvider,StackTraceProvider){
+/*
+angular.module('ui.logger').config(function(loggerProvider){
   loggerProvider.setLevel('debug');
   loggerProvider.setInterceptor(function(data){
     console.log(data);
   });
   loggerProvider.disableConsoleLogging(true);
-  StackTraceProvider.setOptions({a:1,b:2});
+  //StackTraceProvider.setOptions({offline:true});
 });
-angular.module('ui.logger').run(function(logger){
+angular.module('ui.logger').run(function testRun(logger){
   var _logger=logger.getInstance();
   var _logger1=logger.getInstance('run');
   _logger.info(_logger===_logger1);
@@ -29,4 +29,5 @@ angular.module('ui.logger').run(function(logger){
   }catch(err){
     _logger.debug(err);
   }
-});*/
+});
+*/
