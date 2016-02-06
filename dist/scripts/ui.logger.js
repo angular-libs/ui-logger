@@ -10,16 +10,16 @@
  */
 angular.module('ui.logger', []);
 
-
-angular.module('ui.logger').config(["loggerProvider", function(loggerProvider){
+/*
+angular.module('ui.logger').config(function(loggerProvider){
   loggerProvider.setLevel('debug');
   loggerProvider.setInterceptor(function(data){
     console.log(data);
   });
   loggerProvider.disableConsoleLogging(true);
   //StackTraceProvider.setOptions({offline:true});
-}]);
-angular.module('ui.logger').run(["logger", function testRun(logger){
+});
+angular.module('ui.logger').run(function testRun(logger){
   var _logger=logger.getInstance();
   var _logger1=logger.getInstance('run');
   _logger.info(_logger===_logger1);
@@ -29,8 +29,8 @@ angular.module('ui.logger').run(["logger", function testRun(logger){
   }catch(err){
     _logger.debug(err);
   }
-}]);
-
+});
+*/
 
 'use strict';
 
@@ -323,7 +323,7 @@ angular.module('ui.logger').constant('sourceMap', window.sourceMap);
   function _findFunctionName(source, lineNumber) {
     // function {name}({args}) m[1]=name m[2]=args
     var reFunctionDeclaration = /function\s+([^(]*?)\s*\(([^)]*)\)/;
-    // {name} = function ({args}) TODO args capture
+    // {name} = function ({args})
     var reFunctionExpression = /['"]?([$_A-Za-z][$_A-Za-z0-9]*)['"]?\s*[:=]\s*function\b/;
     // {name} = eval()
     var reFunctionEvaluation = /['"]?([$_A-Za-z][$_A-Za-z0-9]*)['"]?\s*[:=]\s*(?:eval|new Function)\b/;
@@ -372,7 +372,6 @@ angular.module('ui.logger').constant('sourceMap', window.sourceMap);
           var $q=$injector.get('$q');
           var def=$q.defer();
           $.ajax(url).then(function(content) {
-            //_cache[url]._file=content;
             def.resolve(_findSourceMappingURL(content));
           }).fail(function(error) {
             def.reject(error);
@@ -458,45 +457,3 @@ angular.module('ui.logger').constant('sourceMap', window.sourceMap);
   Provider.prototype.configure=Configure;
   angular.module('ui.logger').provider('sourceMapUtil',['sourceMap',Provider]);
 })();
-//angular.module('ui.logger').factory('sourceMapUtil', function (sourceMap,$injector) {
-//    var _cache={};
-//    function Service(){
-//
-//      function getOriginalLocation(stack){
-//        var $q=$injector.get('$q');
-//        var url=stack.fileName;
-//        var def=$q.defer();
-//        //check if map exist in cache for the file else get the map and update the cache
-//        if(!_cache[url]){
-//          url=url+'.map';
-//          _cache[url]={
-//            exist:false,
-//            _map:{}
-//          };
-//          $.getJSON(url, function(map) {
-//            _cache[url].exist=true;
-//            _cache[url]._map=new sourceMap.SourceMapConsumer(map);
-//            var _stack=_cache[url]._map.originalPositionFor(stack);
-//            def.resolve(_stack);
-//          }).fail(function(error) {
-//            _cache[url].exist=false;
-//            _cache[url]._map=null;
-//            def.resolve(stack);
-//          });
-//        }else{
-//          if(_cache[url].exist){
-//            //read map and return stack from source
-//            var _stack=_cache[url]._map.originalPositionFor(stack);
-//            def.resolve(_stack);
-//          }else{
-//            def.resolve(stack);
-//          }
-//        }
-//        return def.promise;
-//      }
-//      return {
-//        getOriginalLocation: getOriginalLocation
-//      };
-//    }
-//    return new Service();
-//  });
