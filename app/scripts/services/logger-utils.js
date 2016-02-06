@@ -8,7 +8,7 @@
  * Service in the ui.logger.
  */
 angular.module('ui.logger')
-  .service('logUtils', function (StackTrace, $window,loggerLevels,$injector) {
+  .service('logUtils', function (StackTrace, $window,loggerLevels,$injector,sourceMapUtil) {
     var $defaultLogger;
     function errback(err) {
       $defaultLogger.warn("Error server-side logging failed");
@@ -17,9 +17,9 @@ angular.module('ui.logger')
     function log(logger,exception) {
       var errorMessage = exception.toString();
       var eventLogDateTime = moment().format('LLL');
-
+      var $q;
       if(!(exception instanceof Error)){
-        var $q=$injector.get('$q');
+        $q=$injector.get('$q');
         return $q.resolve({
           name:logger.name,
           time:eventLogDateTime,
@@ -27,18 +27,26 @@ angular.module('ui.logger')
           message: errorMessage
         });
       }else{
+        $q=$injector.get('$q');
+
         return StackTrace.fromError(exception,StackTrace.$options).then(function(stackframes){
-          var stringifiedStack = stackframes.map(function(sf) {
-            return sf.toString();
-          }).join('\n');
-          return {
-            name:logger.name,
-            time:eventLogDateTime,
-            url: $window.location.href,
-            message: errorMessage,
-            stackframes: stringifiedStack//,
-            //cause: ( cause || "")
-          };
+          var _promises=[];
+          for(var a=0;a<stackframes.length;a++){
+            _promises.push(sourceMapUtil.getOriginalLocation(stackframes[a]));
+          }
+          return $q.all(_promises).then(function(results){
+            var stringifiedStack = results.map(function(sf) {
+              return sf.toString();
+            });//.join('\n');
+            return {
+              name:logger.name,
+              time:eventLogDateTime,
+              url: $window.location.href,
+              message: errorMessage,
+              stackframes: stringifiedStack
+            };
+          });
+
         }).catch(errback);
       }
 

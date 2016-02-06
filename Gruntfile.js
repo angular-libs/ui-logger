@@ -223,8 +223,14 @@ module.exports = function (grunt) {
       app: {
         src: ['<%= yeoman.app %>/index.html'],
         exclude: ['bower_components/source-map/source-map.js'],
-        include: ['bower_components/source-map/dist/source-map.js'],
-        ignorePath:  /\.\.\//
+        //include: ['bower_components/source-map/dist/source-map.js'],
+        ignorePath:  /\.\.\//,
+        onMainNotFound: function(pkg) {
+          console.log(pkg);
+        },
+        overrides: {
+          "source-map": "bower_components/source-map/dist/source-map.js"
+        }
       }
     },
 

@@ -4,9 +4,13 @@
   "dependencies": {
     "angular": "^1.4.0",
     "moment": "~2.10.6",
-    "stacktrace-js": "~1.0.1"
+    "stacktrace-js": "~1.0.1",
+    "source-map": "mozilla/source-map#0.5.1",
+    "jquery": "~2.2.0"
   },
-  "main": ["dist/scripts/ui.logger.js"],
+  "main": [
+    "dist/scripts/ui.logger.js"
+  ],
   "devDependencies": {
     "angular-mocks": "^1.4.0"
   },
@@ -20,7 +24,9 @@
   },
   "description": "ui-logger for angular js",
   "keywords": [
-    "ui-logger","front-end-logger","angularjs-logger",
+    "ui-logger",
+    "front-end-logger",
+    "angularjs-logger",
     "angularjs",
     "logger"
   ],

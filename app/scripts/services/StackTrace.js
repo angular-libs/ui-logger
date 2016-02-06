@@ -15,7 +15,9 @@
       window.StackTrace.$options=self.options;
       return window.StackTrace;
     }
-    this.options={};
+    this.options={
+      offline:true
+    };
     this.$get=Service;
   }
   function SetOptions(opts){
