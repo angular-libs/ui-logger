@@ -10,7 +10,7 @@
  */
 angular.module('ui.logger', []);
 
-
+/*
 angular.module('ui.logger').config(function(loggerProvider){
   loggerProvider.setLevel('debug');
   loggerProvider.setInterceptor(function(data){
@@ -30,4 +30,4 @@ angular.module('ui.logger').run(function testRun(logger){
     _logger.debug(err);
   }
 });
-
+*/
