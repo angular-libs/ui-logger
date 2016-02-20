@@ -32,3 +32,7 @@
 
 [![Analytics](https://ga-beacon.appspot.com/UA-71806888-3/ui-logger/)](https://github.com/angular-libs/ui-logger)
 
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/angular-libs/ui-logger/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
