@@ -9,6 +9,7 @@
 [![Bower version](https://badge.fury.io/bo/ui-logger.svg)](https://badge.fury.io/bo/ui-logger)
 [![Issue Stats](http://issuestats.com/github/angular-libs/ui-logger/badge/pr?style=flat-square)](http://issuestats.com/github/angular-libs/ui-logger)
 [![Issue Stats](http://issuestats.com/github/angular-libs/ui-logger/badge/issue)](http://issuestats.com/github/angular-libs/ui-logger)
+[![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/angular-libs?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 -![codecov.io](https://codecov.io/github/angular-libs/ui-logger/branch.svg?branch=master)
 
