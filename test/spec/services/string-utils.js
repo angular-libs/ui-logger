@@ -11,7 +11,7 @@ describe('Service: stringUtils', function () {
     stringUtils = _stringUtils_;
   }));
 
-  it('should do something', function () {
+  xit('should do something', function () {
     expect(!!stringUtils).toBe(true);
   });
 

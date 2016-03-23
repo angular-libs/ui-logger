@@ -11,7 +11,7 @@ describe('Service: loggerUtils', function () {
     loggerUtils = _loggerUtils_;
   }));
 
-  it('should do something', function () {
+  xit('should do something', function () {
     expect(!!loggerUtils).toBe(true);
   });
 

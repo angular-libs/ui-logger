@@ -11,7 +11,7 @@ describe('Service: StackTrace', function () {
     _StackTrace = StackTrace;
   }));
 
-  it('should do something', function () {
+  xit('should do something', function () {
     expect(!!_StackTrace).toBe(true);
   });
 
