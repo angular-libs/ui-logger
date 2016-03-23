@@ -31,7 +31,7 @@
   //}
   function _findFunctionName(source, lineNumber) {
     // function {name}({args}) m[1]=name m[2]=args
-    var reFunctionDeclaration = /function\s+([^(]*?)\s*\(([^)]*)\)/;
+    var reFunctionDeclaration = /function+([^(]*?)\s*\(([^)]*)\)/;
     // {name} = function ({args})
     var reFunctionExpression = /['"]?([$_A-Za-z][$_A-Za-z0-9]*)['"]?\s*[:=]\s*function\b/;
     // {name} = eval()
@@ -39,7 +39,7 @@
     var lines = source.split('\n');
 
     // Walk backwards in the source lines until we find the line which matches one of the patterns above
-    var code = '', line, maxLines = Math.min(lineNumber, 20), m, commentPos;
+    var code = '', line, maxLines = Math.min(lineNumber, 50), m, commentPos;
     for (var i = 0; i < maxLines; ++i) {
       // lineNo is 1-based, source[] is 0-based
       line = lines[lineNumber - i - 1];
@@ -58,8 +58,9 @@
           return m[1];
         }
         m = reFunctionDeclaration.exec(code);
-        if (m && m[1]) {
-          return m[1];
+        if (m ) {
+          if(m[1]!=='') {return m[1];}
+          else { return undefined;}
         }
         m = reFunctionEvaluation.exec(code);
         if (m && m[1]) {
@@ -90,15 +91,18 @@
         function getOriginalLocation(stack){
           var $q=$injector.get('$q');
           var url=stack.fileName;
+          var _stack;
           var def=$q.defer();
+
           if(!_self.options.offline){
             def.resolve(stack);
             return;
           }
           //check if map exist in cache for the file else get the map and update the cache
           if(!_cache[url]){
+            var def1= $q.defer();
             _cache[url]={
-              exist:false,
+              exist:def1.promise,
               _map:{},
               _file:''
             };
@@ -107,7 +111,6 @@
                 mapUrl=url.substring(0,url.lastIndexOf('/')+1)+mapUrl;
               }
               $.getJSON(mapUrl, function(map) {
-                _cache[url].exist=true;
                 _cache[url]._map=new sourceMap.SourceMapConsumer(map);
                 var loc=_cache[url]._map.originalPositionFor({
                   line: stack.lineNumber,
@@ -121,35 +124,46 @@
                   var sourceFileUlr=url.substring(0,url.lastIndexOf('/')+1)+loc.source;
                   $.ajax(sourceFileUlr).then(function(content) {
                     _cache[url]._file=content;
+                    def1.resolve(true);
                     loc.name=_findFunctionName(_cache[url]._file,loc.line, loc.column);
                     _stack=new window.StackFrame(loc.name, stack.args, loc.source, loc.line, loc.column);
                     def.resolve(_stack);
                   }).fail(function() {
                     _cache[url]._file=null;
+                    def1.resolve(true);
                     def.resolve(stack);
                   });
                 }
 
 
               }).fail(function() {
-                _cache[url].exist=false;
+                def1.reject();
                 _cache[url]._map=null;
                 def.resolve(stack);
               });
             },function(){
-              _cache[url].exist=false;
+              def1.reject();
               _cache[url]._map=null;
               def.resolve(stack);
             });
 
           }else{
-            if(_cache[url].exist){
-              //read map and return stack from source
-              var _stack=_cache[url]._map.originalPositionFor(stack);
-              def.resolve(_stack);
-            }else{
+            _cache[url].exist.then(function(val){
+              if(val){
+                //read map and return stack from source
+                var loc=_cache[url]._map.originalPositionFor({
+                  line: stack.lineNumber,
+                  column: stack.columnNumber
+                });
+                loc.name=_findFunctionName(_cache[url]._file,loc.line, loc.column);
+                _stack=new window.StackFrame(loc.name, stack.args, loc.source, loc.line, loc.column);
+                def.resolve(_stack);
+              }
+            },function(){
               def.resolve(stack);
-            }
+            });
+
+
           }
           return def.promise;
         }

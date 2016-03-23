@@ -11,7 +11,7 @@ describe('Service: sourceMap', function () {
     sourceMap = _sourceMap_;
   }));
 
-  it('should do something', function () {
+  xit('should do something', function () {
     expect(!!sourceMap).toBe(true);
   });
 
