@@ -137,12 +137,12 @@
 
 
               }).fail(function() {
-                def1.resolve(false);
+                def1.reject();
                 _cache[url]._map=null;
                 def.resolve(stack);
               });
             },function(){
-              def1.resolve(false);
+              def1.reject();
               _cache[url]._map=null;
               def.resolve(stack);
             });
@@ -158,9 +158,9 @@
                 loc.name=_findFunctionName(_cache[url]._file,loc.line, loc.column);
                 _stack=new window.StackFrame(loc.name, stack.args, loc.source, loc.line, loc.column);
                 def.resolve(_stack);
-              }else{
-                def.resolve(stack);
               }
+            },function(){
+              def.resolve(stack);
             });
 
 
