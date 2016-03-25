@@ -120,7 +120,6 @@
     }
   }
   function Provider(sourceMap) {
-    var syntaxTree;
     this.options={
       offline:true
     };
@@ -154,7 +153,8 @@
             _cache[url]={
               exist:def1.promise,
               _map:{},
-              _file:''
+              _file:'',
+              _syntaxTree:''
             };
             getSourceFileUrl(url).then(function(mapUrl){
               if(mapUrl && !validURL(mapUrl)){
@@ -167,8 +167,8 @@
                   column: stack.columnNumber
                 });
                 if(_cache[url]._file){
-                  syntaxTree = window.esprima.parse(_cache[url]._file,{loc:true});
-                  loc.name=_findFunctionName(syntaxTree,loc.line, loc.column);
+                  _cache[url]._syntaxTree = window.esprima.parse(_cache[url]._file,{loc:true});
+                  loc.name=_findFunctionName( _cache[url]._syntaxTree,loc.line, loc.column);
                   _stack=new window.StackFrame(loc.name, stack.args, loc.source, loc.line, loc.column);
                   def.resolve(_stack);
                 }else{
@@ -176,8 +176,8 @@
                   $.ajax(sourceFileUlr).then(function(content) {
                     _cache[url]._file=content;
                     def1.resolve(true);
-                    syntaxTree = window.esprima.parse(_cache[url]._file,{loc:true});
-                    loc.name=_findFunctionName(syntaxTree,loc.line, loc.column);
+                    _cache[url]._syntaxTree = window.esprima.parse(_cache[url]._file,{loc:true});
+                    loc.name=_findFunctionName( _cache[url]._syntaxTree,loc.line, loc.column);
                     _stack=new window.StackFrame(loc.name, stack.args, loc.source, loc.line, loc.column);
                     def.resolve(_stack);
                   }).fail(function() {
@@ -207,8 +207,7 @@
                   line: stack.lineNumber,
                   column: stack.columnNumber
                 });
-                syntaxTree = window.esprima.parse(_cache[url]._file,{loc:true});
-                loc.name=_findFunctionName(syntaxTree,loc.line, loc.column);
+                loc.name=_findFunctionName( _cache[url]._syntaxTree,loc.line, loc.column);
                 _stack=new window.StackFrame(loc.name, stack.args, loc.source, loc.line, loc.column);
                 def.resolve(_stack);
               }
