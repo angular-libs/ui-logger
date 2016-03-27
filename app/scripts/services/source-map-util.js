@@ -8,6 +8,85 @@
  * Factory in the ui.logger.
  */
 (function(){
+  function findNode(nodeList,lineNumber,ColumnNumber){
+    var first = 0;
+    var last = nodeList.length - 1;
+    var nodeIndex;
+    var middle = Math.floor((first+last)/2);
+    while(first<=last){
+      if(nodeList[middle].loc.start.line>lineNumber){
+        last = middle -1;
+      }
+      else if((nodeList[middle].loc.start.line<=lineNumber) && (nodeList[middle].loc.end.line >=lineNumber) ){
+        if(nodeList[middle].loc.start.line===lineNumber && nodeList[middle].loc.start.column >ColumnNumber ){
+          last = middle -1;
+        }else if(nodeList[middle].loc.end.line===lineNumber && nodeList[middle].loc.end.column < ColumnNumber){
+          first = middle+1;
+        }else{
+        nodeIndex = middle;
+        break;}
+      }
+      else {
+        first = middle+1;
+      }
+      middle = Math.floor((first+last)/2);
+    }
+    if(first > last){
+      return {};
+    }
+    else{
+
+      return nodeList[nodeIndex];
+    }
+  }
+
+  function switchNodeType(node,lineNumber,ColumnNumber){
+    var type = node.type;
+    var result={};
+    switch(type) {
+      case 'ExpressionStatement':
+        result = switchNodeType(node.expression,lineNumber,ColumnNumber);
+        break;
+      case 'CallExpression':
+        var argumentNode = findNode(node.arguments,lineNumber,ColumnNumber);
+        if (!Object.keys(argumentNode).length) {
+          result = switchNodeType(node.callee, lineNumber,ColumnNumber);
+        }
+        else {
+          result = switchNodeType(argumentNode, lineNumber,ColumnNumber);
+        }
+
+        break;
+      case 'FunctionDeclaration':
+      case 'FunctionExpression':
+        var funcNode = findNode(node.body.body, lineNumber,ColumnNumber);
+        result = switchNodeType(funcNode, lineNumber,ColumnNumber);
+        if(result.id===undefined){
+          result=node;
+        }
+        break;
+      case 'ArrayExpression':
+        var arrNode=findNode(node.elements, lineNumber,ColumnNumber);
+        result = switchNodeType(arrNode, lineNumber,ColumnNumber);
+        break;
+      case 'VariableDeclaration':
+        var declarationNode=findNode(node.declarations, lineNumber,ColumnNumber);
+        var testNode=switchNodeType(declarationNode.init, lineNumber,ColumnNumber);
+        if(testNode.type==='FunctionDeclaration'||testNode.type==='FunctionExpression'){
+         result=declarationNode;
+        }else{
+            result = node;
+        }
+        break;
+      case 'AssignmentExpression':
+        result =switchNodeType(node.right, lineNumber,ColumnNumber);
+        break;
+      default :
+        result = node;
+    }
+    return result;
+  }
+
   function _findSourceMappingURL(source) {
     var m = /\/\/[#@] ?sourceMappingURL=([^\s'"]+)\s*$/.exec(source);
     if (m && m[1]) {
@@ -17,6 +96,7 @@
   function Configure(options) {
     angular.extend(this.options,options);
   }
+
   function validURL(str) {
     var regexp = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
     return regexp.test(str);
@@ -29,46 +109,15 @@
   //  }
   //  return str;
   //}
-  function _findFunctionName(source, lineNumber) {
-    // function {name}({args}) m[1]=name m[2]=args
-    var reFunctionDeclaration = /function+([^(]*?)\s*\(([^)]*)\)/;
-    // {name} = function ({args})
-    var reFunctionExpression = /['"]?([$_A-Za-z][$_A-Za-z0-9]*)['"]?\s*[:=]\s*function\b/;
-    // {name} = eval()
-    var reFunctionEvaluation = /['"]?([$_A-Za-z][$_A-Za-z0-9]*)['"]?\s*[:=]\s*(?:eval|new Function)\b/;
-    var lines = source.split('\n');
-
-    // Walk backwards in the source lines until we find the line which matches one of the patterns above
-    var code = '', line, maxLines = Math.min(lineNumber, 50), m, commentPos;
-    for (var i = 0; i < maxLines; ++i) {
-      // lineNo is 1-based, source[] is 0-based
-      line = lines[lineNumber - i - 1];
-      if(line){
-        commentPos = line.indexOf('//');
-        if (commentPos >= 0) {
-          line = line.substr(0, commentPos);
-        }
-      }
-
-
-      if (line) {
-        code = line + code;
-        m = reFunctionExpression.exec(code);
-        if (m && m[1]) {
-          return m[1];
-        }
-        m = reFunctionDeclaration.exec(code);
-        if (m ) {
-          if(m[1]!=='') {return m[1];}
-          else { return undefined;}
-        }
-        m = reFunctionEvaluation.exec(code);
-        if (m && m[1]) {
-          return m[1];
-        }
-      }
+  function _findFunctionName(syntaxTree,lineNumber,ColumnNumber) {
+    var node= findNode(syntaxTree.body,lineNumber,ColumnNumber);
+    var finalResult = switchNodeType(node,lineNumber,ColumnNumber);
+    if(finalResult.id===null){
+      return undefined;
     }
-    return undefined;
+    else{
+      return finalResult.id.name;
+    }
   }
   function Provider(sourceMap) {
     this.options={
@@ -104,7 +153,8 @@
             _cache[url]={
               exist:def1.promise,
               _map:{},
-              _file:''
+              _file:'',
+              _syntaxTree:''
             };
             getSourceFileUrl(url).then(function(mapUrl){
               if(mapUrl && !validURL(mapUrl)){
@@ -117,7 +167,8 @@
                   column: stack.columnNumber
                 });
                 if(_cache[url]._file){
-                  loc.name=_findFunctionName(_cache[url]._file,loc.line, loc.column);
+                  _cache[url]._syntaxTree = window.esprima.parse(_cache[url]._file,{loc:true});
+                  loc.name=_findFunctionName( _cache[url]._syntaxTree,loc.line, loc.column);
                   _stack=new window.StackFrame(loc.name, stack.args, loc.source, loc.line, loc.column);
                   def.resolve(_stack);
                 }else{
@@ -125,7 +176,8 @@
                   $.ajax(sourceFileUlr).then(function(content) {
                     _cache[url]._file=content;
                     def1.resolve(true);
-                    loc.name=_findFunctionName(_cache[url]._file,loc.line, loc.column);
+                    _cache[url]._syntaxTree = window.esprima.parse(_cache[url]._file,{loc:true});
+                    loc.name=_findFunctionName( _cache[url]._syntaxTree,loc.line, loc.column);
                     _stack=new window.StackFrame(loc.name, stack.args, loc.source, loc.line, loc.column);
                     def.resolve(_stack);
                   }).fail(function() {
@@ -155,7 +207,7 @@
                   line: stack.lineNumber,
                   column: stack.columnNumber
                 });
-                loc.name=_findFunctionName(_cache[url]._file,loc.line, loc.column);
+                loc.name=_findFunctionName( _cache[url]._syntaxTree,loc.line, loc.column);
                 _stack=new window.StackFrame(loc.name, stack.args, loc.source, loc.line, loc.column);
                 def.resolve(_stack);
               }
