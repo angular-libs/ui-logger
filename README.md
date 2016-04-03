@@ -9,7 +9,7 @@
 [![Bower version](https://badge.fury.io/bo/ui-logger.svg)](https://badge.fury.io/bo/ui-logger)
 [![Issue Stats](http://issuestats.com/github/angular-libs/ui-logger/badge/pr?style=flat-square)](http://issuestats.com/github/angular-libs/ui-logger)
 [![Issue Stats](http://issuestats.com/github/angular-libs/ui-logger/badge/issue)](http://issuestats.com/github/angular-libs/ui-logger)
-[![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/angular-libs?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/angular-libs?utm_source=share-link&utm_medium=link&utm_campaign=share-link)
 [![Codacy Badge](https://api.codacy.com/project/badge/grade/a1ec55d3234241f283c9da7ff8a9a21b)](https://www.codacy.com/app/kuldeepkeshwar/ui-logger)
 
 -![codecov.io](https://codecov.io/github/angular-libs/ui-logger/branch.svg?branch=master)
