@@ -1,5 +1,7 @@
 
 # ui-logger
+
+[![Greenkeeper badge](https://badges.greenkeeper.io/angular-libs/ui-logger.svg)](https://greenkeeper.io/)
 [![Built with Grunt](https://cdn.gruntjs.com/builtwith.png)](http://gruntjs.com/)
 [![Build Status](https://travis-ci.org/angular-libs/ui-logger.svg?branch=master)](https://travis-ci.org/angular-libs/ui-logger)
 [![Dependency Status](https://gemnasium.com/angular-libs/ui-logger.svg)](https://gemnasium.com/angular-libs/ui-logger)
